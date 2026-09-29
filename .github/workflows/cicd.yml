@@ -1,0 +1,48 @@
+name: CI/CD Pipeline 
+ 
+on: 
+  push: 
+    branches: [ main ] # Triggers the pipeline on every commit to the main branch 
+ 
+permissions: 
+  contents: read 
+  pages: write 
+  id-token: write 
+ 
+jobs: 
+  # --- CONTINUOUS INTEGRATION (CI) STAGE --- 
+  build-and-test: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - name: Checkout Code 
+        uses: actions/checkout@v4 
+ 
+      - name: Set up Node.js 
+        uses: actions/setup-node@v4 
+        with: 
+          node-version: 20 
+ 
+      - name: Install Dependencies (Build) 
+        run: npm ci 
+ 
+      - name: Run Automated Tests 
+        run: npm test 
+ 
+  # --- CONTINUOUS DEPLOYMENT (CD) STAGE --- 
+  deploy: 
+    needs: build-and-test # CD only runs if the CI stage passes successfully ("Fail Fast") 
+    runs-on: ubuntu-latest 
+    steps: 
+      - name: Checkout Code 
+        uses: actions/checkout@v4 
+ 
+      - name: Setup GitHub Pages Environment 
+        uses: actions/configure-pages@v4 
+ 
+      - name: Upload Artifact 
+        uses: actions/upload-pages-artifact@v3 
+        with: 
+          path: '.' # Uploads the current folder to host as a website 
+ 
+      - name: Deploy to GitHub Pages 
+        uses: actions/deploy-pages@v4
